@@ -2,7 +2,16 @@
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
+
+TRIGGER = re.compile(r"^@ai(?=$|\s)", re.IGNORECASE)
+NAME = re.compile(r"^[a-z0-9-]{1,32}$")
+REFERENCE = re.compile(r"@\[([a-z0-9-]{1,32})\]")
+USAGE = (
+    "usage: @ai <instruction>, @ai pin <name>, or @ai unpin <name>; "
+    "names use 1-32 lowercase letters, numbers, or hyphens"
+)
 
 
 @dataclass
@@ -36,4 +45,21 @@ class ParseError:
 
 def parse(comment_text: str) -> Pin | Unpin | Instruct | ParseError | None:
     """Parse one comment into a samye command."""
-    raise NotImplementedError
+    trigger = TRIGGER.match(comment_text)
+    if trigger is None:
+        return None
+
+    content = comment_text[trigger.end() :].strip()
+    if not content:
+        return ParseError(USAGE)
+
+    parts = content.split()
+    command = parts[0]
+    if command not in {"pin", "unpin"}:
+        return Instruct(instruction=content, refs=REFERENCE.findall(content))
+
+    if len(parts) != 2 or NAME.fullmatch(parts[1]) is None:
+        return ParseError(USAGE)
+    if command == "pin":
+        return Pin(parts[1])
+    return Unpin(parts[1])
