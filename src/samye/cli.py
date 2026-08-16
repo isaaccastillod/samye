@@ -15,8 +15,6 @@ def build_parser() -> argparse.ArgumentParser:
     subparsers.add_parser("run", help="run the comment polling daemon")
     subparsers.add_parser("auth", help="authorize the Google bot account")
     subparsers.add_parser("docs", help="list Google Docs visible to the bot")
-    web = subparsers.add_parser("web", help="serve the read-only suggestion viewer")
-    web.add_argument("--port", type=int, default=8321)
     return parser
 
 

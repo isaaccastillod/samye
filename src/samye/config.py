@@ -64,6 +64,10 @@ class Config(pydantic.BaseModel):
 
     model_config = pydantic.ConfigDict(extra="forbid", validate_default=True)
 
+    write_mode: Literal["propose", "reply", "suggest"] = "propose"
+    web_port: int = 8321
+    web_bind_host: str = "127.0.0.1"
+    web_base_url: str | None = None
     poll_interval_s: float = 5.0
     context_chars: int = 2000
     max_docs: int = 25
@@ -72,6 +76,26 @@ class Config(pydantic.BaseModel):
     docs: list[str] = pydantic.Field(default_factory=list)
     client_secret_path: Path = Path("~/.config/samye/client_secret.json")
     token_path: Path = Path("~/.local/state/samye/token.json")
+
+    @pydantic.field_validator("web_port")
+    @classmethod
+    def valid_web_port(cls, value: int) -> int:
+        """Require a valid TCP port."""
+        if not 1 <= value <= 65535:
+            raise ValueError("must be between 1 and 65535")
+        return value
+
+    @pydantic.field_validator("web_base_url")
+    @classmethod
+    def absolute_web_base_url(cls, value: str | None) -> str | None:
+        """Require an absolute HTTP(S) URL when the web UI is advertised."""
+        if value is None:
+            return None
+        value = value.strip().rstrip("/")
+        parsed = urlparse(value)
+        if parsed.scheme not in {"http", "https"} or not parsed.netloc:
+            raise ValueError("must be an absolute HTTP(S) URL")
+        return value
 
     @pydantic.field_validator("poll_interval_s")
     @classmethod

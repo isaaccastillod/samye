@@ -36,6 +36,35 @@ model = "gpt-oss:120b"
     assert config.client_secret_path == tmp_path / ".config/samye/client_secret.json"
     assert config.token_path == tmp_path / ".local/state/samye/token.json"
     assert config.docs == ["doc-1", "doc-2"]
+    assert config.write_mode == "propose"
+    assert config.web_port == 8321
+    assert config.web_bind_host == "127.0.0.1"
+    assert config.web_base_url is None
+
+
+def test_loads_v3_web_configuration(tmp_path: Path) -> None:
+    path = write_config(
+        tmp_path / "config.toml",
+        """
+write_mode = "reply"
+web_port = 9000
+web_bind_host = "0.0.0.0"
+web_base_url = "https://samye.example.test/"
+default_provider = "local"
+
+[providers.local]
+type = "openai_compat"
+base_url = "http://localhost:11434"
+model = "gpt-oss:120b"
+""",
+    )
+
+    config = load_config(path)
+
+    assert config.write_mode == "reply"
+    assert config.web_port == 9000
+    assert config.web_bind_host == "0.0.0.0"
+    assert config.web_base_url == "https://samye.example.test"
 
 
 def test_loads_hosted_providers(tmp_path: Path) -> None:
@@ -175,6 +204,39 @@ base_url = "http://localhost:11434"
 model = "model"
 """,
             "must be greater than zero",
+        ),
+        (
+            """
+default_provider = "local"
+web_port = 0
+[providers.local]
+type = "openai_compat"
+base_url = "http://localhost:11434"
+model = "model"
+""",
+            "must be between 1 and 65535",
+        ),
+        (
+            """
+default_provider = "local"
+web_port = 65536
+[providers.local]
+type = "openai_compat"
+base_url = "http://localhost:11434"
+model = "model"
+""",
+            "must be between 1 and 65535",
+        ),
+        (
+            """
+default_provider = "local"
+web_base_url = "samye.example.test"
+[providers.local]
+type = "openai_compat"
+base_url = "http://localhost:11434"
+model = "model"
+""",
+            r"absolute HTTP\(S\) URL",
         ),
         (
             """
