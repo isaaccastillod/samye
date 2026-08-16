@@ -1,0 +1,1 @@
+"""Samye Google Docs collaborator."""

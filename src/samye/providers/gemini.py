@@ -1,0 +1,1 @@
+"""Google Gemini generateContent adapter."""
