@@ -574,18 +574,14 @@ class Engine:
         """Recover persisted work and poll configured or discovered documents forever."""
         await self._recover_startup()
         discovered: list[str] = []
-        next_discovery = 0.0
         while True:
             if self.cfg.docs:
                 document_ids = self.cfg.docs
             else:
-                now = time.monotonic()
-                if now >= next_discovery:
-                    try:
-                        discovered = await asyncio.to_thread(self.gdocs.list_shared_docs)
-                    except Exception:
-                        LOGGER.exception("document discovery failed")
-                    next_discovery = now + 600
+                try:
+                    discovered = await asyncio.to_thread(self.gdocs.list_shared_docs)
+                except Exception:
+                    LOGGER.exception("document discovery failed")
                 document_ids = discovered
             if len(document_ids) > self.cfg.max_docs:
                 LOGGER.warning(

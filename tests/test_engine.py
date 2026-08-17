@@ -690,6 +690,41 @@ async def test_polling_filters_handled_threads_and_advances_watermark(tmp_path: 
     assert "new" in engine.state.files["doc"].seen
 
 
+@pytest.mark.asyncio
+async def test_auto_discovery_finds_documents_invited_after_startup(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    engine, gdocs, _ = make_engine(tmp_path)
+    discoveries = iter([["doc"], ["doc", "new-doc"]])
+    polled: list[str] = []
+    sleep_calls = 0
+
+    class StopPolling(Exception):
+        pass
+
+    def list_shared_docs() -> list[str]:
+        return next(discoveries)
+
+    async def poll_file(file_id: str) -> None:
+        polled.append(file_id)
+
+    async def sleep(delay: float) -> None:
+        nonlocal sleep_calls
+        assert delay == engine.cfg.poll_interval_s
+        sleep_calls += 1
+        if sleep_calls == 2:
+            raise StopPolling
+
+    monkeypatch.setattr(gdocs, "list_shared_docs", list_shared_docs)
+    monkeypatch.setattr(engine, "_poll_file", poll_file)
+    monkeypatch.setattr("samye.engine.asyncio.sleep", sleep)
+
+    with pytest.raises(StopPolling):
+        await engine.run_forever()
+
+    assert polled == ["doc", "doc", "new-doc"]
+
+
 def test_suggest_mode_fails_at_startup(tmp_path: Path) -> None:
     gdocs = FakeGDocs(make_doc())
 
