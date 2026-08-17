@@ -80,3 +80,7 @@ The compose file mounts the config and OAuth client read-only, mounts token/stat
 ## Optional: suggest mode
 
 Native Google Docs suggestions require Workspace Developer Preview enrollment and preview-specific API support. They are not used by `propose` or `reply`, and this repository does not enable `suggest` mode until that optional extension is implemented and verified.
+
+## License
+
+samye is available under the [MIT License](LICENSE).

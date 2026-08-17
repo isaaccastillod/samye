@@ -10,10 +10,20 @@ def test_package_metadata_links_readme_and_repository() -> None:
     metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
 
     assert metadata["readme"] == "README.md"
+    assert metadata["license"] == "MIT"
+    assert metadata["license-files"] == ["LICENSE"]
     assert metadata["urls"] == {
         "Repository": "https://github.com/isaaccastillod/samye",
         "Issues": "https://github.com/isaaccastillod/samye/issues",
     }
+
+
+def test_mit_license_names_repository_author() -> None:
+    license_text = (ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    assert license_text.startswith("MIT License\n")
+    assert "Copyright (c) 2026 Isaac Castillo" in license_text
+    assert "Permission is hereby granted, free of charge" in license_text
 
 
 def test_container_runs_as_non_root_and_uses_locked_environment() -> None:
