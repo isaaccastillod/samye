@@ -3,6 +3,7 @@
 const csrfToken = document.querySelector('meta[name="samye-token"]').content;
 const proposalsNode = document.querySelector("#proposals");
 const messageNode = document.querySelector("#message");
+const refreshIntervalMs = 2500;
 
 function tokens(text) {
   return text.match(/\s+|[^\s]+/gu) || [];
@@ -72,6 +73,7 @@ function statusNotice(status) {
 }
 
 async function transition(proposal, action, buttons) {
+  transitionInFlight += 1;
   for (const button of buttons) button.disabled = true;
   try {
     const response = await fetch(
@@ -85,6 +87,8 @@ async function transition(proposal, action, buttons) {
   } catch (error) {
     messageNode.textContent = error.message;
     for (const button of buttons) button.disabled = false;
+  } finally {
+    transitionInFlight -= 1;
   }
 }
 
@@ -119,6 +123,8 @@ function proposalCard(proposal) {
 }
 
 let proposals = [];
+let loadInFlight = false;
+let transitionInFlight = 0;
 
 function render(items) {
   proposalsNode.replaceChildren(...items.map(proposalCard));
@@ -127,15 +133,23 @@ function render(items) {
     : `${items.length} proposal${items.length === 1 ? "" : "s"}`;
 }
 
-async function load() {
+async function load({ silent = false } = {}) {
+  if (loadInFlight || transitionInFlight > 0 || document.visibilityState === "hidden") return;
+  loadInFlight = true;
   try {
     const response = await fetch("/api/proposals");
     if (!response.ok) throw new Error(`request failed (${response.status})`);
     proposals = await response.json();
     render(proposals);
   } catch (error) {
-    messageNode.textContent = error.message;
+    if (!silent) messageNode.textContent = error.message;
+  } finally {
+    loadInFlight = false;
   }
 }
 
 load();
+setInterval(() => load({ silent: true }), refreshIntervalMs);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "visible") load({ silent: true });
+});

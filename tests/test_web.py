@@ -100,6 +100,9 @@ async def test_lists_fixture_proposal_for_diff_rendering(
     assert "wordDiff(proposal.target_text, proposal.replacement)" in script
     assert 'diffPane("Current"' in script
     assert 'diffPane("Proposed"' in script
+    assert "setInterval(() => load({ silent: true }), refreshIntervalMs)" in script
+    assert 'document.addEventListener("visibilitychange"' in script
+    assert "loadInFlight || transitionInFlight > 0" in script
     assert "innerHTML" not in script
 
 
@@ -182,3 +185,6 @@ async def test_index_injects_per_run_csrf_token(web: tuple[MockEngine, object, s
     assert response.status_code == 200
     assert f'content="{token}"' in response.text
     assert "__SAMYE_TOKEN__" not in response.text
+    assert "<title>samye</title>" in response.text
+    assert "<h1>samye</h1>" in response.text
+    assert "samye proposals" not in response.text
