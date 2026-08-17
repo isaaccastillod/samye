@@ -7,3 +7,11 @@ __pycache__/
 dist/
 build/
 
+# Local configuration, credentials, and runtime state
+.env
+.env.*
+!.env.example
+config.toml
+client_secret*.json
+token.json
+state.json
