@@ -38,7 +38,17 @@ def create_app(engine: Engine) -> FastAPI:
     @app.get("/", response_class=HTMLResponse)
     async def index() -> HTMLResponse:
         template = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
-        return HTMLResponse(template.replace(TOKEN_PLACEHOLDER, csrf_token))
+        return HTMLResponse(
+            template.replace(TOKEN_PLACEHOLDER, csrf_token),
+            headers={"Cache-Control": "no-store"},
+        )
+
+    @app.get("/api/session")
+    async def session() -> JSONResponse:
+        return JSONResponse(
+            {"token": csrf_token},
+            headers={"Cache-Control": "no-store"},
+        )
 
     @app.get("/api/proposals")
     async def list_proposals() -> list[dict[str, object]]:

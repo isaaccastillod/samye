@@ -111,6 +111,9 @@ async def test_lists_fixture_proposal_for_diff_rendering(
     assert "loadInFlight || transitionInFlight > 0" in script
     assert 'element("button", "Remove", "button quiet")' in script
     assert "removeProposal(proposal, remove)" in script
+    assert "postWithCsrf(" in script
+    assert "if (response.status === 403)" in script
+    assert 'fetch("/api/session", { cache: "no-store" })' in script
     assert '`status ${proposal.status}`' in script
     assert "No proposals to review" in script
     assert "innerHTML" not in script
@@ -241,6 +244,7 @@ async def test_index_injects_per_run_csrf_token(web: tuple[MockEngine, object, s
 
     assert response.status_code == 200
     assert f'content="{token}"' in response.text
+    assert response.headers["cache-control"] == "no-store"
     assert "__SAMYE_TOKEN__" not in response.text
     assert "<title>samye</title>" in response.text
     assert "<h1>samye</h1>" in response.text
@@ -253,3 +257,14 @@ async def test_index_injects_per_run_csrf_token(web: tuple[MockEngine, object, s
     assert 'class="app-bar"' in response.text
     assert 'class="brand"' in response.text
     assert 'class="brand-icon"' not in response.text
+
+
+@pytest.mark.asyncio
+async def test_session_refresh_returns_current_token(web: tuple[MockEngine, object, str]) -> None:
+    _, app, token = web
+
+    response = await request(app, "GET", "/api/session")
+
+    assert response.status_code == 200
+    assert response.json() == {"token": token}
+    assert response.headers["cache-control"] == "no-store"

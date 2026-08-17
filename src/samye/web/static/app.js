@@ -1,6 +1,6 @@
 "use strict";
 
-const csrfToken = document.querySelector('meta[name="samye-token"]').content;
+let csrfToken = document.querySelector('meta[name="samye-token"]').content;
 const proposalsNode = document.querySelector("#proposals");
 const messageNode = document.querySelector("#message");
 const refreshIntervalMs = 2500;
@@ -72,13 +72,32 @@ function statusNotice(status) {
   return null;
 }
 
+async function refreshCsrfToken() {
+  const response = await fetch("/api/session", { cache: "no-store" });
+  if (!response.ok) throw new Error(`session refresh failed (${response.status})`);
+  const session = await response.json();
+  csrfToken = session.token;
+}
+
+async function postWithCsrf(url) {
+  const send = () => fetch(url, {
+    method: "POST",
+    headers: { "X-Samye-Token": csrfToken },
+  });
+  let response = await send();
+  if (response.status === 403) {
+    await refreshCsrfToken();
+    response = await send();
+  }
+  return response;
+}
+
 async function transition(proposal, action, buttons) {
   transitionInFlight += 1;
   for (const button of buttons) button.disabled = true;
   try {
-    const response = await fetch(
+    const response = await postWithCsrf(
       `/api/proposals/${encodeURIComponent(proposal.file_id)}/${encodeURIComponent(proposal.id)}/${action}`,
-      { method: "POST", headers: { "X-Samye-Token": csrfToken } },
     );
     if (!response.ok) throw new Error(`request failed (${response.status})`);
     const result = await response.json();
@@ -96,9 +115,8 @@ async function removeProposal(proposal, button) {
   transitionInFlight += 1;
   button.disabled = true;
   try {
-    const response = await fetch(
+    const response = await postWithCsrf(
       `/api/proposals/${encodeURIComponent(proposal.file_id)}/${encodeURIComponent(proposal.id)}/remove`,
-      { method: "POST", headers: { "X-Samye-Token": csrfToken } },
     );
     if (!response.ok) throw new Error(`request failed (${response.status})`);
     proposals = proposals.filter((item) => item.id !== proposal.id || item.file_id !== proposal.file_id);
