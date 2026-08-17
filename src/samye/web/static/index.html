@@ -3,11 +3,37 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>samye</title>
+    <meta name="samye-token" content="__SAMYE_TOKEN__">
+    <title>samye proposals</title>
+    <style>
+      :root { color-scheme: light dark; font: 16px/1.5 system-ui, sans-serif; }
+      body { margin: 0; background: Canvas; color: CanvasText; }
+      main { max-width: 1120px; margin: 0 auto; padding: 2rem 1rem 4rem; }
+      header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
+      h1 { font-size: 1.5rem; margin: 0 0 1.5rem; }
+      #message { color: GrayText; }
+      .proposal { border: 1px solid color-mix(in srgb, CanvasText 22%, transparent); border-radius: .6rem; margin: 0 0 1rem; padding: 1rem; }
+      .proposal h2 { font-size: 1rem; margin: 0; }
+      .meta { display: flex; flex-wrap: wrap; gap: .5rem 1rem; color: GrayText; margin: .25rem 0 1rem; }
+      .status { font-weight: 650; }
+      .diff { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+      .pane { min-width: 0; }
+      .pane h3 { font-size: .8rem; text-transform: uppercase; color: GrayText; margin: 0 0 .25rem; }
+      pre { white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: .75rem; border-radius: .35rem; background: color-mix(in srgb, CanvasText 7%, Canvas); }
+      del { background: color-mix(in srgb, #d33 28%, transparent); text-decoration: none; }
+      ins { background: color-mix(in srgb, #2a5 28%, transparent); text-decoration: none; }
+      .actions { display: flex; gap: .5rem; margin-top: 1rem; }
+      button { font: inherit; padding: .35rem .8rem; cursor: pointer; }
+      button:disabled { cursor: wait; }
+      .notice { border-left: .25rem solid #c88a00; padding-left: .75rem; }
+      @media (max-width: 720px) { .diff { grid-template-columns: 1fr; } }
+    </style>
   </head>
   <body>
-    <main id="app">samye viewer is not implemented</main>
+    <main>
+      <header><h1>samye proposals</h1><span id="message">Loading…</span></header>
+      <section id="proposals" aria-live="polite"></section>
+    </main>
     <script src="/static/app.js"></script>
   </body>
 </html>
-
