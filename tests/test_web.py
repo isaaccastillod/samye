@@ -243,3 +243,5 @@ async def test_index_injects_per_run_csrf_token(web: tuple[MockEngine, object, s
     assert "<title>samye</title>" in response.text
     assert "<h1>samye</h1>" in response.text
     assert "samye proposals" not in response.text
+    assert '"Google Sans", Roboto, "Noto Sans", Arial, sans-serif' in response.text
+    assert "pre { font: inherit;" in response.text
