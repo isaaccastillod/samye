@@ -1,7 +1,7 @@
 [project]
 name = "samye"
 version = "0.1.0"
-description = "A self-hosted Google Docs suggestion collaborator."
+description = "A self-hosted Google Docs editing collaborator."
 requires-python = ">=3.12,<3.13"
 dependencies = [
     "fastapi>=0.115",
@@ -38,4 +38,3 @@ target-version = "py312"
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
-

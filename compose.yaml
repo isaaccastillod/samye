@@ -1,0 +1,12 @@
+services:
+  samye:
+    build: .
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8321:8321"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "${HOME}/.config/samye:/home/samye/.config/samye:ro"
+      - "${HOME}/.local/state/samye:/home/samye/.local/state/samye"
+    # Add provider API keys under `environment` or with an env_file; never put them in TOML.

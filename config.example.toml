@@ -1,0 +1,18 @@
+# Use 127.0.0.1 when running directly. Docker needs 0.0.0.0 inside the container;
+# compose.yaml still publishes the port only on host loopback.
+web_bind_host = "127.0.0.1"
+web_port = 8321
+write_mode = "propose"
+
+poll_interval_s = 5.0
+context_chars = 2000
+max_docs = 25
+docs = []
+
+default_provider = "local"
+
+[providers.local]
+type = "openai_compat"
+base_url = "http://localhost:11434"
+model = "gpt-oss:120b"
+timeout_s = 120.0
