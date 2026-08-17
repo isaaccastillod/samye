@@ -129,9 +129,9 @@ class HttpProvider:
         return data
 
     def require_completion(self, value: object) -> str:
-        """Require a nonempty text completion without altering its whitespace."""
-        if not isinstance(value, str) or not value.strip():
-            raise ProviderError(f"{self.name}: provider returned an empty completion")
+        """Require text without altering it; empty text represents a deletion."""
+        if not isinstance(value, str):
+            raise ProviderError(f"{self.name}: provider returned a non-text completion")
         return value
 
     def _response_error(self, response: httpx.Response) -> ProviderError:

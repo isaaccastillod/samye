@@ -236,8 +236,14 @@ def test_reply_resolves_only_when_requested() -> None:
             fileId="doc-1",
             commentId="comment-1",
             body={"content": "done", "action": "resolve"},
+            fields="id",
         ),
-        call(fileId="doc-1", commentId="comment-2", body={"content": "waiting"}),
+        call(
+            fileId="doc-1",
+            commentId="comment-2",
+            body={"content": "waiting"},
+            fields="id",
+        ),
     ]
 
 

@@ -151,7 +151,12 @@ class GDocs:
         body: dict[str, object] = {"content": text}
         if resolve:
             body["action"] = "resolve"
-        self._replies.create(fileId=file_id, commentId=comment_id, body=body).execute()
+        self._replies.create(
+            fileId=file_id,
+            commentId=comment_id,
+            body=body,
+            fields="id",
+        ).execute()
 
     def list_shared_docs(self) -> list[str]:
         """List every visible, non-trashed Google Doc."""

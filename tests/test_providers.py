@@ -189,17 +189,32 @@ async def test_retries_429_once_using_retry_after(
 
 
 @pytest.mark.parametrize("provider_type", PROVIDER_TYPES)
-async def test_rejects_empty_completion(
+async def test_accepts_empty_completion_as_deletion(
     provider_type: ProviderType, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setenv("SAMYE_TEST_API_KEY", "test-secret")
 
     def handle(request: httpx.Request) -> httpx.Response:
-        return httpx.Response(200, json=completion_response(provider_type, " \n "))
+        return httpx.Response(200, json=completion_response(provider_type, ""))
 
     async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
-        with pytest.raises(ProviderError, match="empty completion"):
-            await adapter(provider_type, client, SleepRecorder()).complete("system", "user")
+        result = await adapter(provider_type, client, SleepRecorder()).complete("system", "user")
+
+    assert result == ""
+
+
+async def test_openai_compat_rejects_non_text_completion() -> None:
+    def handle(request: httpx.Request) -> httpx.Response:
+        return httpx.Response(200, json={"choices": [{"message": {"content": None}}]})
+
+    async with httpx.AsyncClient(transport=httpx.MockTransport(handle)) as client:
+        provider = OpenAICompatibleProvider(
+            "configured-name",
+            provider_config("openai_compat"),
+            client=client,
+        )
+        with pytest.raises(ProviderError, match="non-text completion"):
+            await provider.complete("system", "user")
 
 
 @pytest.mark.parametrize("provider_type", PROVIDER_TYPES)

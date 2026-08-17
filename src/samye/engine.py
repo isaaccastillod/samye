@@ -215,8 +215,6 @@ class Engine:
         provider = self.providers[provider_name]
         user_prompt = _build_user_prompt(command, target, pointers, self.cfg.context_chars)
         replacement = _strip_wrapping_fence(await provider.complete(SYSTEM_PROMPT, user_prompt))
-        if not replacement.strip():
-            raise ProviderError(f"{provider_name}: provider returned an empty completion")
 
         if self.cfg.write_mode == "reply":
             await self._queue_and_deliver(
@@ -454,18 +452,24 @@ class Engine:
                 pending.text,
                 resolve=pending.resolve,
             )
-        except Exception:
+        except Exception as exc:
             pending.attempts += 1
+            detail = _safe_error_summary(exc)
             if pending.attempts >= 3:
-                LOGGER.warning("abandoning reply delivery for comment %s", comment_id)
+                LOGGER.warning(
+                    "abandoning reply delivery for comment %s (%s)",
+                    comment_id,
+                    detail,
+                )
                 file_state.pending_replies.pop(comment_id, None)
                 file_state.inflight.pop(comment_id, None)
                 file_state.mark_seen(comment_id, pending.comment_modified_time)
             else:
                 LOGGER.warning(
-                    "reply delivery failed for comment %s; attempt %d of 3",
+                    "reply delivery failed for comment %s; attempt %d of 3 (%s)",
                     comment_id,
                     pending.attempts,
+                    detail,
                 )
             self.state.save(self.state_path)
             return
@@ -792,3 +796,16 @@ def _rfc3339(value: datetime) -> str:
 
 def _is_rate_limited(error: Exception) -> bool:
     return isinstance(error, HttpError) and getattr(error.resp, "status", None) in {403, 429}
+
+
+def _safe_error_summary(error: Exception) -> str:
+    """Describe an API failure without logging response bodies or request URLs."""
+    if not isinstance(error, HttpError):
+        return type(error).__name__
+    status = getattr(error.resp, "status", None)
+    label = f"Google HTTP {status}" if isinstance(status, int) else "Google HTTP error"
+    reason = getattr(error, "reason", None)
+    if not isinstance(reason, str) or not reason.strip():
+        return label
+    normalized = " ".join(reason.split())[:160]
+    return f"{label}: {normalized}"

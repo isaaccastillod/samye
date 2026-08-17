@@ -9,9 +9,10 @@ from pathlib import Path
 from typing import Any
 
 import pytest
+from googleapiclient.errors import HttpError
 
 from samye.config import Config
-from samye.engine import Engine
+from samye.engine import Engine, _safe_error_summary
 from samye.gdocs import Doc, NamedRangeInfo, RevisionConflict
 from samye.providers.base import ProviderError
 from samye.state import FileState, Inflight, PendingReply, Proposal, State
@@ -266,6 +267,18 @@ async def test_propose_mode_creates_proposal_and_ready_reply(tmp_path: Path) -> 
     assert "proposal ready" in gdocs.replies[0][2]
     assert "Target text:\nbefore" in provider.calls[0][1]
     assert engine.state.files["doc"].seen == {"comment": "2026-08-16T10:00:00Z"}
+
+
+@pytest.mark.asyncio
+async def test_propose_mode_treats_empty_replacement_as_deletion(tmp_path: Path) -> None:
+    engine, gdocs, _ = make_engine(tmp_path, provider_result="")
+
+    await engine.handle_comment("doc", command_comment("@ai delete this title"))
+
+    proposals = engine.list_proposals()
+    assert len(proposals) == 1
+    assert proposals[0][1].replacement == ""
+    assert "proposal ready" in gdocs.replies[0][2]
 
 
 @pytest.mark.asyncio
@@ -688,3 +701,18 @@ def test_suggest_mode_fails_at_startup(tmp_path: Path) -> None:
             State(),
             tmp_path / "state.json",
         )
+
+
+def test_google_error_summary_omits_response_body_and_url() -> None:
+    response = type("Response", (), {"status": 400, "reason": "Bad Request"})()
+    error = HttpError(
+        response,
+        b'{"error":{"message":"The fields parameter is required"},"secret":"body"}',
+        uri="https://example.invalid/private-document",
+    )
+
+    summary = _safe_error_summary(error)
+
+    assert summary == "Google HTTP 400: The fields parameter is required"
+    assert "private-document" not in summary
+    assert "secret" not in summary
