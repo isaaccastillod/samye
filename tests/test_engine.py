@@ -557,6 +557,48 @@ async def test_reject_and_unknown_proposals(tmp_path: Path) -> None:
         await engine.reject_proposal("missing-doc", "proposal")
 
 
+@pytest.mark.parametrize("status", ["applied", "rejected", "stale", "indeterminate"])
+@pytest.mark.asyncio
+async def test_remove_terminal_proposal_persists_deletion(
+    tmp_path: Path, status: str
+) -> None:
+    engine, _, _ = make_engine(tmp_path, state=state_with_proposal(status))
+
+    await engine.remove_proposal("doc", "proposal")
+
+    assert engine.state.files["doc"].proposals == {}
+    assert State.load(tmp_path / "state.json").files["doc"].proposals == {}
+
+
+@pytest.mark.parametrize("status", ["pending", "applying"])
+@pytest.mark.asyncio
+async def test_remove_refuses_nonterminal_proposal(tmp_path: Path, status: str) -> None:
+    engine, _, _ = make_engine(tmp_path, state=state_with_proposal(status))
+
+    with pytest.raises(ValueError, match="only terminal"):
+        await engine.remove_proposal("doc", "proposal")
+
+    assert "proposal" in engine.state.files["doc"].proposals
+
+
+@pytest.mark.asyncio
+async def test_remove_rolls_back_in_memory_when_save_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    engine, _, _ = make_engine(tmp_path, state=state_with_proposal("applied"))
+
+    def fail(path: Path) -> None:
+        del path
+        raise OSError("disk full")
+
+    monkeypatch.setattr(engine.state, "save", fail)
+
+    with pytest.raises(OSError, match="disk full"):
+        await engine.remove_proposal("doc", "proposal")
+
+    assert "proposal" in engine.state.files["doc"].proposals
+
+
 @pytest.mark.asyncio
 async def test_startup_recovers_mutation_and_applying_proposal(tmp_path: Path) -> None:
     item = proposal("applying")

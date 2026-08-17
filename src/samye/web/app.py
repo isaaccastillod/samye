@@ -70,5 +70,16 @@ def create_app(engine: Engine) -> FastAPI:
             raise HTTPException(status_code=404, detail="proposal not found") from None
         return {"status": status}
 
+    @app.post("/api/proposals/{file_id}/{proposal_id}/remove")
+    async def remove(file_id: str, proposal_id: str, request: Request) -> dict[str, bool]:
+        await require_token(request)
+        try:
+            await engine.remove_proposal(file_id, proposal_id)
+        except KeyError:
+            raise HTTPException(status_code=404, detail="proposal not found") from None
+        except ValueError:
+            raise HTTPException(status_code=409, detail="proposal is not terminal") from None
+        return {"removed": True}
+
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
     return app

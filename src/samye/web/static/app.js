@@ -92,6 +92,25 @@ async function transition(proposal, action, buttons) {
   }
 }
 
+async function removeProposal(proposal, button) {
+  transitionInFlight += 1;
+  button.disabled = true;
+  try {
+    const response = await fetch(
+      `/api/proposals/${encodeURIComponent(proposal.file_id)}/${encodeURIComponent(proposal.id)}/remove`,
+      { method: "POST", headers: { "X-Samye-Token": csrfToken } },
+    );
+    if (!response.ok) throw new Error(`request failed (${response.status})`);
+    proposals = proposals.filter((item) => item.id !== proposal.id || item.file_id !== proposal.file_id);
+    render(proposals);
+  } catch (error) {
+    messageNode.textContent = error.message;
+    button.disabled = false;
+  } finally {
+    transitionInFlight -= 1;
+  }
+}
+
 function proposalCard(proposal) {
   const card = element("article", undefined, "proposal");
   card.append(element("h2", proposal.document_title));
@@ -117,6 +136,12 @@ function proposalCard(proposal) {
     accept.addEventListener("click", () => transition(proposal, "accept", buttons));
     reject.addEventListener("click", () => transition(proposal, "reject", buttons));
     actions.append(accept, reject);
+    card.append(actions);
+  } else if (["applied", "rejected", "stale", "indeterminate"].includes(proposal.status)) {
+    const actions = element("div", undefined, "actions");
+    const remove = element("button", "Remove");
+    remove.addEventListener("click", () => removeProposal(proposal, remove));
+    actions.append(remove);
     card.append(actions);
   }
   return card;

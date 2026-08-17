@@ -22,6 +22,7 @@ from samye.gdocs import Doc, GDocs, RevisionConflict
 from samye.pins import PinOutcome, handle_pin, handle_unpin
 from samye.providers.base import Provider, ProviderError
 from samye.state import (
+    TERMINAL_PROPOSAL_STATUSES,
     FileState,
     Inflight,
     PendingReply,
@@ -338,6 +339,19 @@ class Engine:
             if proposal.status != "pending":
                 return proposal.status
             return await self._finish_proposal_locked(file_id, proposal, "rejected")
+
+    async def remove_proposal(self, file_id: str, proposal_id: str) -> None:
+        """Permanently remove a terminal proposal from local state."""
+        async with self._lock(file_id):
+            proposal = self._get_proposal(file_id, proposal_id)
+            if proposal.status not in TERMINAL_PROPOSAL_STATUSES:
+                raise ValueError("only terminal proposals can be removed")
+            del self.state.files[file_id].proposals[proposal_id]
+            try:
+                self.state.save(self.state_path)
+            except Exception:
+                self.state.files[file_id].proposals[proposal_id] = proposal
+                raise
 
     def _get_proposal(self, file_id: str, proposal_id: str) -> Proposal:
         try:

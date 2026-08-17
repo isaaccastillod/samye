@@ -52,6 +52,12 @@ class MockEngine:
             raise KeyError(proposal_id)
         return self.reject_status
 
+    async def remove_proposal(self, file_id: str, proposal_id: str) -> None:
+        if file_id == "missing" or proposal_id == "missing":
+            raise KeyError(proposal_id)
+        if self.proposal.status in {"pending", "applying"}:
+            raise ValueError("not terminal")
+
 
 @pytest.fixture
 def web() -> tuple[MockEngine, object, str]:
@@ -103,6 +109,8 @@ async def test_lists_fixture_proposal_for_diff_rendering(
     assert "setInterval(() => load({ silent: true }), refreshIntervalMs)" in script
     assert 'document.addEventListener("visibilitychange"' in script
     assert "loadInFlight || transitionInFlight > 0" in script
+    assert 'element("button", "Remove")' in script
+    assert "removeProposal(proposal, remove)" in script
     assert "innerHTML" not in script
 
 
@@ -147,6 +155,53 @@ async def test_unknown_proposal_is_404(web: tuple[MockEngine, object, str]) -> N
         app,
         "POST",
         "/api/proposals/doc/missing/accept",
+        headers={"X-Samye-Token": token},
+    )
+
+    assert response.status_code == 404
+
+
+@pytest.mark.asyncio
+async def test_removes_terminal_proposal(web: tuple[MockEngine, object, str]) -> None:
+    engine, app, token = web
+    engine.proposal.status = "applied"
+
+    response = await request(
+        app,
+        "POST",
+        "/api/proposals/doc/proposal/remove",
+        headers={"X-Samye-Token": token},
+    )
+
+    assert response.status_code == 200
+    assert response.json() == {"removed": True}
+
+
+@pytest.mark.asyncio
+async def test_remove_refuses_pending_proposal(web: tuple[MockEngine, object, str]) -> None:
+    _, app, token = web
+
+    response = await request(
+        app,
+        "POST",
+        "/api/proposals/doc/proposal/remove",
+        headers={"X-Samye-Token": token},
+    )
+
+    assert response.status_code == 409
+
+
+@pytest.mark.asyncio
+async def test_remove_unknown_proposal_is_404(
+    web: tuple[MockEngine, object, str]
+) -> None:
+    engine, app, token = web
+    engine.proposal.status = "applied"
+
+    response = await request(
+        app,
+        "POST",
+        "/api/proposals/doc/missing/remove",
         headers={"X-Samye-Token": token},
     )
 
