@@ -251,4 +251,5 @@ async def test_index_injects_per_run_csrf_token(web: tuple[MockEngine, object, s
     assert "--insert-bg: #e6f4ea" in response.text
     assert "--delete-bg: #fce8e6" in response.text
     assert 'class="app-bar"' in response.text
-    assert 'class="brand-icon"' in response.text
+    assert 'class="brand"' in response.text
+    assert 'class="brand-icon"' not in response.text
