@@ -1,8 +1,19 @@
 """Static checks for container and setup documentation."""
 
+import tomllib
 from pathlib import Path
 
 ROOT = Path(__file__).parents[1]
+
+
+def test_package_metadata_links_readme_and_repository() -> None:
+    metadata = tomllib.loads((ROOT / "pyproject.toml").read_text(encoding="utf-8"))["project"]
+
+    assert metadata["readme"] == "README.md"
+    assert metadata["urls"] == {
+        "Repository": "https://github.com/isaaccastillod/samye",
+        "Issues": "https://github.com/isaaccastillod/samye/issues",
+    }
 
 
 def test_container_runs_as_non_root_and_uses_locked_environment() -> None:
