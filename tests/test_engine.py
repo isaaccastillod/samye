@@ -345,7 +345,7 @@ async def test_unpin_does_not_require_a_quoted_span(tmp_path: Path) -> None:
     )
 
     assert gdocs.unpin_calls == [("context", infos)]
-    assert gdocs.replies[-1][2:] == ("unpinned @[context]", True)
+    assert gdocs.replies[-1][2:] == ("unpinned context", True)
 
 
 @pytest.mark.asyncio
@@ -355,7 +355,7 @@ async def test_pin_uses_resolved_span_and_resolves(tmp_path: Path) -> None:
     await engine.handle_comment("doc", command_comment("@ai pin context"))
 
     assert gdocs.pin_calls == [("context", Span("tab-1", 1, 7), [])]
-    assert gdocs.replies[-1][2:] == ("pinned @[context]", True)
+    assert gdocs.replies[-1][2:] == ("pinned context", True)
 
 
 @pytest.mark.asyncio
@@ -467,6 +467,25 @@ async def test_accept_read_failure_leaves_pending_and_propagates(tmp_path: Path)
         await engine.accept_proposal("doc", "proposal")
 
     assert engine.state.files["doc"].proposals["proposal"].status == "pending"
+
+
+@pytest.mark.asyncio
+async def test_accept_applying_save_failure_rolls_back_before_write(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    engine, gdocs, _ = make_engine(tmp_path, state=state_with_proposal())
+
+    def fail(path: Path) -> None:
+        del path
+        raise OSError("disk full")
+
+    monkeypatch.setattr(engine.state, "save", fail)
+
+    with pytest.raises(OSError, match="disk full"):
+        await engine.accept_proposal("doc", "proposal")
+
+    assert engine.state.files["doc"].proposals["proposal"].status == "pending"
+    assert gdocs.direct_calls == []
 
 
 @pytest.mark.asyncio

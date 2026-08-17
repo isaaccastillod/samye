@@ -140,6 +140,7 @@ def test_cross_cell_needle_is_not_a_match() -> None:
 
     assert "leftright" in text_map.text
     assert text_map.find_all("leftright") == []
+    assert text_map.to_utf16_span(0, 4) == Span("tab", 3, 7)
 
 
 def test_pending_suggestion_span_is_not_clean() -> None:

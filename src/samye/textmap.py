@@ -67,10 +67,15 @@ class TextMap:
             raise ValueError("invalid Python string range")
         if not self._is_continuous(py_start, py_end):
             raise ValueError("range crosses a structural boundary")
+        if py_start == py_end:
+            start = end = self._location_at(py_start)
+        else:
+            start = self._mapped[py_start].start
+            end = self._mapped[py_end - 1].end
         return Span(
             tab_id=self._tab_id,
-            start=self._location_at(py_start),
-            end=self._location_at(py_end),
+            start=start,
+            end=end,
             segment_id=self._segment_id,
         )
 

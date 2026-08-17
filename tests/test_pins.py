@@ -40,7 +40,7 @@ async def test_fresh_pin() -> None:
     outcome = await handle_pin(gdocs, doc, span, Pin("context"))
 
     gdocs.replace_pin.assert_called_once_with(doc, "context", span, [])
-    assert outcome == PinOutcome("pinned @[context]", True)
+    assert outcome == PinOutcome("pinned context", True)
 
 
 @pytest.mark.asyncio
@@ -53,7 +53,7 @@ async def test_overwrite_pin() -> None:
     outcome = await handle_pin(gdocs, doc, span, Pin("context"))
 
     gdocs.replace_pin.assert_called_once_with(doc, "context", span, old)
-    assert outcome == PinOutcome("updated @[context]", True)
+    assert outcome == PinOutcome("pinned context", True)
 
 
 @pytest.mark.asyncio
@@ -65,7 +65,7 @@ async def test_unpin() -> None:
     outcome = await handle_unpin(gdocs, doc, Unpin("context"))
 
     gdocs.delete_named_ranges.assert_called_once_with(doc, "context", infos)
-    assert outcome == PinOutcome("unpinned @[context]", True)
+    assert outcome == PinOutcome("unpinned context", True)
 
 
 @pytest.mark.asyncio
@@ -75,4 +75,4 @@ async def test_unpin_nonexistent() -> None:
     outcome = await handle_unpin(gdocs, snapshot(), Unpin("missing"))
 
     gdocs.delete_named_ranges.assert_not_called()
-    assert outcome == PinOutcome("no pin named @[missing] exists", True)
+    assert outcome == PinOutcome("no pin named missing exists", True)

@@ -290,7 +290,11 @@ class Engine:
                 return await self._finish_proposal_locked(file_id, proposal, "stale")
 
             proposal.status = "applying"
-            self.state.save(self.state_path)
+            try:
+                self.state.save(self.state_path)
+            except Exception:
+                proposal.status = "pending"
+                raise
             try:
                 await asyncio.to_thread(
                     self.gdocs.direct_replace,

@@ -27,14 +27,13 @@ async def handle_pin(
     """Create or atomically replace a pin over an engine-resolved span."""
     old = doc.named_ranges.get(cmd.name, [])
     await asyncio.to_thread(gdocs.replace_pin, doc, cmd.name, span, old)
-    verb = "updated" if old else "pinned"
-    return PinOutcome(reply=f"{verb} @[{cmd.name}]", resolve=True)
+    return PinOutcome(reply=f"pinned {cmd.name}", resolve=True)
 
 
 async def handle_unpin(gdocs: GDocs, doc: Doc, cmd: Unpin) -> PinOutcome:
     """Delete every named range belonging to a pin."""
     infos = doc.named_ranges.get(cmd.name, [])
     if not infos:
-        return PinOutcome(reply=f"no pin named @[{cmd.name}] exists", resolve=True)
+        return PinOutcome(reply=f"no pin named {cmd.name} exists", resolve=True)
     await asyncio.to_thread(gdocs.delete_named_ranges, doc, cmd.name, infos)
-    return PinOutcome(reply=f"unpinned @[{cmd.name}]", resolve=True)
+    return PinOutcome(reply=f"unpinned {cmd.name}", resolve=True)
