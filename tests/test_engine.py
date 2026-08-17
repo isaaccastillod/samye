@@ -372,6 +372,19 @@ async def test_pin_uses_resolved_span_and_resolves(tmp_path: Path) -> None:
 
 
 @pytest.mark.asyncio
+async def test_pin_decodes_html_entities_in_drive_quote(tmp_path: Path) -> None:
+    engine, gdocs, _ = make_engine(tmp_path, doc=make_doc("acción"))
+
+    await engine.handle_comment(
+        "doc",
+        command_comment("@ai pin context", quote="acci&#243;n"),
+    )
+
+    assert gdocs.pin_calls == [("context", Span("tab-1", 1, 7), [])]
+    assert gdocs.replies[-1][2:] == ("pinned context", True)
+
+
+@pytest.mark.asyncio
 async def test_missing_pointer_replies_without_provider_call(tmp_path: Path) -> None:
     engine, gdocs, provider = make_engine(tmp_path)
 

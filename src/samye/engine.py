@@ -11,6 +11,7 @@ import secrets
 import time
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from html import unescape
 from pathlib import Path
 from typing import Any
 
@@ -737,7 +738,7 @@ def _quote(comment: dict[str, object]) -> str | None:
     if not isinstance(quoted, dict):
         return None
     value = quoted.get("value")
-    return value if isinstance(value, str) else None
+    return unescape(value) if isinstance(value, str) else None
 
 
 def _comment_id(comment: dict[str, object]) -> str:
