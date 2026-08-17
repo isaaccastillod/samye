@@ -2,6 +2,10 @@
 
 samye is a self-hosted daemon that responds to commands in Google Docs comments. It asks a configured language model for replacement text and, by default, stores the result locally as a proposal for review in its web UI. Accepted proposals are written to the document by the bot account and recorded in Google Docs version history.
 
+## Demo
+
+![A Google Docs comment and its proposed edit in the samye review UI](https://raw.githubusercontent.com/isaaccastillod/samye/main/docs/demo.png)
+
 ## Setup
 
 1. Create a Google Cloud project, enable the Google Docs API and Google Drive API, and configure its OAuth consent screen.

@@ -54,6 +54,13 @@ def test_readme_states_security_and_delivery_limits() -> None:
     assert "browser-equipped machine" in readme
 
 
+def test_readme_demo_image_exists() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+    assert "](https://raw.githubusercontent.com/isaaccastillod/samye/main/docs/demo.png)" in readme
+    assert (ROOT / "docs/demo.png").is_file()
+
+
 def test_readme_explicitly_documents_local_model_support() -> None:
     readme = (ROOT / "README.md").read_text(encoding="utf-8")
 
