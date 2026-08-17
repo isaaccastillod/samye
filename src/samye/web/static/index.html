@@ -7,38 +7,92 @@
     <title>samye</title>
     <style>
       :root {
-        color-scheme: light dark;
+        --page: #f8f9fa;
+        --surface: #fff;
+        --border: #dadce0;
+        --text: #202124;
+        --muted: #5f6368;
+        --primary: #1a73e8;
+        --primary-hover: #185abc;
+        --insert-bg: #e6f4ea;
+        --insert-text: #137333;
+        --delete-bg: #fce8e6;
+        --delete-text: #c5221f;
         font-family: "Google Sans Text", "Google Sans", Roboto, "Noto Sans", Arial, sans-serif;
         font-size: 14px;
         line-height: 1.5;
       }
-      body { margin: 0; background: Canvas; color: CanvasText; }
-      main { max-width: 1120px; margin: 0 auto; padding: 2rem 1rem 4rem; }
-      header { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; }
-      h1 { font-size: 1.5rem; margin: 0 0 1.5rem; }
-      #message { color: GrayText; }
-      .proposal { border: 1px solid color-mix(in srgb, CanvasText 22%, transparent); border-radius: .6rem; margin: 0 0 1rem; padding: 1rem; }
-      .proposal h2 { font-size: 1rem; margin: 0; }
-      .meta { display: flex; flex-wrap: wrap; gap: .5rem 1rem; color: GrayText; margin: .25rem 0 1rem; }
-      .status { font-weight: 650; }
-      .diff { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
-      .pane { min-width: 0; }
-      .pane h3 { font-size: .8rem; text-transform: uppercase; color: GrayText; margin: 0 0 .25rem; }
-      pre { font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; margin: 0; padding: .75rem; border-radius: .35rem; background: color-mix(in srgb, CanvasText 7%, Canvas); }
-      del { background: color-mix(in srgb, #d33 28%, transparent); text-decoration: none; }
-      ins { background: color-mix(in srgb, #2a5 28%, transparent); text-decoration: none; }
-      .actions { display: flex; gap: .5rem; margin-top: 1rem; }
-      button { font: inherit; padding: .35rem .8rem; cursor: pointer; }
-      button:disabled { cursor: wait; }
-      .notice { border-left: .25rem solid #c88a00; padding-left: .75rem; }
-      @media (max-width: 720px) { .diff { grid-template-columns: 1fr; } }
+      * { box-sizing: border-box; }
+      body { margin: 0; background: var(--page); color: var(--text); }
+      .app-bar {
+        align-items: center;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        height: 64px;
+        justify-content: space-between;
+        padding: 0 24px;
+      }
+      .brand { align-items: center; display: flex; gap: 12px; }
+      .brand-icon { display: block; height: 32px; width: 32px; }
+      h1 { font-size: 1.45rem; font-weight: 500; letter-spacing: -.01em; margin: 0; }
+      #message { color: var(--muted); font-size: .9rem; }
+      main { margin: 0 auto; max-width: 1120px; padding: 32px 24px 64px; }
+      .proposal {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 1px 2px rgb(60 64 67 / 10%);
+        margin: 0 0 20px;
+        padding: 20px;
+      }
+      .proposal h2 { font-size: 1.1rem; font-weight: 500; margin: 0; }
+      .meta { align-items: center; color: var(--muted); display: flex; flex-wrap: wrap; gap: 8px 16px; margin: 6px 0 18px; }
+      .status { border-radius: 999px; font-size: .8rem; font-weight: 600; padding: 2px 9px; text-transform: capitalize; }
+      .status.pending, .status.applying { background: #e8f0fe; color: #174ea6; }
+      .status.applied { background: var(--insert-bg); color: var(--insert-text); }
+      .status.rejected, .status.stale { background: #f1f3f4; color: #3c4043; }
+      .status.indeterminate { background: #fef7e0; color: #b06000; }
+      .diff { display: grid; gap: 16px; grid-template-columns: 1fr 1fr; }
+      .pane { background: var(--surface); border: 1px solid var(--border); border-radius: 4px; min-width: 0; overflow: hidden; }
+      .pane h3 { background: var(--page); border-bottom: 1px solid var(--border); color: var(--muted); font-size: .78rem; font-weight: 600; letter-spacing: .04em; margin: 0; padding: 8px 14px; text-transform: uppercase; }
+      pre { background: var(--surface); font: inherit; font-size: 1rem; margin: 0; min-height: 88px; overflow-wrap: anywhere; padding: 16px; white-space: pre-wrap; }
+      del { background: var(--delete-bg); border-radius: 2px; color: var(--delete-text); text-decoration: line-through; text-decoration-thickness: 1px; }
+      ins { background: var(--insert-bg); border-radius: 2px; color: var(--insert-text); text-decoration: none; }
+      .actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 18px; }
+      .button { background: transparent; border: 1px solid var(--border); border-radius: 4px; color: var(--primary); cursor: pointer; font: inherit; font-weight: 600; min-width: 76px; padding: 7px 14px; }
+      .button:hover { background: #f6fafe; border-color: #c6dafc; }
+      .button.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+      .button.primary:hover { background: var(--primary-hover); border-color: var(--primary-hover); }
+      .button.quiet { border-color: transparent; color: var(--muted); min-width: auto; }
+      .button.quiet:hover { background: #f1f3f4; border-color: transparent; color: var(--text); }
+      .button:disabled { cursor: wait; opacity: .55; }
+      .notice { background: #fef7e0; border-left: 3px solid #f9ab00; color: #5f4b00; margin: 16px 0 0; padding: 10px 12px; }
+      .empty { align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; color: var(--muted); display: flex; flex-direction: column; padding: 72px 24px; text-align: center; }
+      .empty-icon { color: #9aa0a6; height: 44px; margin-bottom: 14px; width: 44px; }
+      .empty h2 { color: var(--text); font-size: 1.1rem; font-weight: 500; margin: 0 0 4px; }
+      .empty p { margin: 0; }
+      @media (max-width: 720px) {
+        .app-bar { padding: 0 16px; }
+        main { padding: 20px 12px 48px; }
+        .proposal { padding: 16px; }
+        .diff { grid-template-columns: 1fr; }
+      }
     </style>
   </head>
   <body>
-    <main>
-      <header><h1>samye</h1><span id="message">Loading…</span></header>
-      <section id="proposals" aria-live="polite"></section>
-    </main>
+    <header class="app-bar">
+      <div class="brand">
+        <svg class="brand-icon" viewBox="0 0 32 32" aria-hidden="true">
+          <path fill="#1a73e8" d="M7 2h12l6 6v22H7a3 3 0 0 1-3-3V5a3 3 0 0 1 3-3Z"/>
+          <path fill="#8ab4f8" d="M19 2v6h6Z"/>
+          <path fill="#fff" d="M9 14h12v2H9zm0 5h12v2H9zm0 5h8v2H9z"/>
+        </svg>
+        <h1>samye</h1>
+      </div>
+      <span id="message">Loading…</span>
+    </header>
+    <main><section id="proposals" aria-live="polite"></section></main>
     <script src="/static/app.js"></script>
   </body>
 </html>

@@ -115,7 +115,7 @@ function proposalCard(proposal) {
   const card = element("article", undefined, "proposal");
   card.append(element("h2", proposal.document_title));
   const meta = element("div", undefined, "meta");
-  meta.append(element("span", proposal.status, "status"));
+  meta.append(element("span", proposal.status, `status ${proposal.status}`));
   meta.append(element("span", `${proposal.provider}/${proposal.model}`));
   meta.append(element("span", proposal.created));
   card.append(meta);
@@ -130,8 +130,8 @@ function proposalCard(proposal) {
   if (notice) card.append(element("p", notice, "notice"));
   if (proposal.status === "pending") {
     const actions = element("div", undefined, "actions");
-    const accept = element("button", "Accept");
-    const reject = element("button", "Reject");
+    const accept = element("button", "Accept", "button primary");
+    const reject = element("button", "Reject", "button");
     const buttons = [accept, reject];
     accept.addEventListener("click", () => transition(proposal, "accept", buttons));
     reject.addEventListener("click", () => transition(proposal, "reject", buttons));
@@ -139,7 +139,7 @@ function proposalCard(proposal) {
     card.append(actions);
   } else if (["applied", "rejected", "stale", "indeterminate"].includes(proposal.status)) {
     const actions = element("div", undefined, "actions");
-    const remove = element("button", "Remove");
+    const remove = element("button", "Remove", "button quiet");
     remove.addEventListener("click", () => removeProposal(proposal, remove));
     actions.append(remove);
     card.append(actions);
@@ -152,9 +152,23 @@ let loadInFlight = false;
 let transitionInFlight = 0;
 
 function render(items) {
-  proposalsNode.replaceChildren(...items.map(proposalCard));
+  if (items.length === 0) {
+    const empty = element("div", undefined, "empty");
+    const icon = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    icon.setAttribute("class", "empty-icon");
+    icon.setAttribute("viewBox", "0 0 24 24");
+    icon.setAttribute("aria-hidden", "true");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute("fill", "currentColor");
+    path.setAttribute("d", "M6 2h9l5 5v15H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2Zm8 2v4h4");
+    icon.append(path);
+    empty.append(icon, element("h2", "No proposals to review"), element("p", "New proposals will appear here automatically."));
+    proposalsNode.replaceChildren(empty);
+  } else {
+    proposalsNode.replaceChildren(...items.map(proposalCard));
+  }
   messageNode.textContent = items.length === 0
-    ? "No proposals"
+    ? "Up to date"
     : `${items.length} proposal${items.length === 1 ? "" : "s"}`;
 }
 

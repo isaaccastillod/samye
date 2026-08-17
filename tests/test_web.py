@@ -109,8 +109,10 @@ async def test_lists_fixture_proposal_for_diff_rendering(
     assert "setInterval(() => load({ silent: true }), refreshIntervalMs)" in script
     assert 'document.addEventListener("visibilitychange"' in script
     assert "loadInFlight || transitionInFlight > 0" in script
-    assert 'element("button", "Remove")' in script
+    assert 'element("button", "Remove", "button quiet")' in script
     assert "removeProposal(proposal, remove)" in script
+    assert '`status ${proposal.status}`' in script
+    assert "No proposals to review" in script
     assert "innerHTML" not in script
 
 
@@ -244,4 +246,9 @@ async def test_index_injects_per_run_csrf_token(web: tuple[MockEngine, object, s
     assert "<h1>samye</h1>" in response.text
     assert "samye proposals" not in response.text
     assert '"Google Sans", Roboto, "Noto Sans", Arial, sans-serif' in response.text
-    assert "pre { font: inherit;" in response.text
+    assert "font: inherit; font-size: 1rem" in response.text
+    assert "--primary: #1a73e8" in response.text
+    assert "--insert-bg: #e6f4ea" in response.text
+    assert "--delete-bg: #fce8e6" in response.text
+    assert 'class="app-bar"' in response.text
+    assert 'class="brand-icon"' in response.text
