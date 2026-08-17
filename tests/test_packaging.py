@@ -31,3 +31,12 @@ def test_readme_states_security_and_delivery_limits() -> None:
     assert "no login" in readme
     assert "authenticated reverse proxy or VPN" in readme
     assert "browser-equipped machine" in readme
+
+
+def test_readme_explicitly_documents_local_model_support() -> None:
+    readme = (ROOT / "README.md").read_text(encoding="utf-8")
+
+    assert "Local models are fully supported" in readme
+    assert 'type = "openai_compat"' in readme
+    assert "Ollama, llama.cpp server, vLLM, LocalAI" in readme
+    assert "http://host.docker.internal:11434" in readme

@@ -22,6 +22,24 @@ samye is a self-hosted daemon that responds to commands in Google Docs comments.
 
 The default `propose` mode and the `reply` mode use generally available Google APIs and do not require Developer Preview enrollment.
 
+## Local models
+
+Local models are fully supported and require no cloud model provider. Configure a provider with `type = "openai_compat"`; samye sends chat-completion requests to `{base_url}/v1/chat/completions`, which works with Ollama, llama.cpp server, vLLM, LocalAI, and other OpenAI-compatible servers. The API key is optional for local endpoints.
+
+For example, an Ollama model running directly on the same machine can be configured as:
+
+```toml
+default_provider = "local"
+
+[providers.local]
+type = "openai_compat"
+base_url = "http://127.0.0.1:11434"
+model = "gpt-oss:120b"
+timeout_s = 120.0
+```
+
+When samye runs in Docker and the model server runs on the host, use `http://host.docker.internal:11434` instead. The included Compose file supplies that host-gateway mapping.
+
 ## Comment commands
 
 Commands must begin the comment text with `@ai`. For commands that edit or propose text, highlight the target text before creating the comment.
@@ -49,7 +67,7 @@ Set `web_bind_host = "0.0.0.0"` in `~/.config/samye/config.toml` for the contain
 docker compose up --build
 ```
 
-The compose file mounts the config and OAuth client read-only, mounts token/state storage read-write, and publishes the UI only at `127.0.0.1:8321` on the host. Add provider secret environment variables under the service's `environment` or `env_file` setting without writing their values into TOML. A provider running on the Docker host is reachable at `host.docker.internal` through the included host-gateway mapping.
+The compose file mounts the config and OAuth client read-only, mounts token/state storage read-write, and publishes the UI only at `127.0.0.1:8321` on the host. Add provider secret environment variables under the service's `environment` or `env_file` setting without writing their values into TOML.
 
 ## Operational limits
 
