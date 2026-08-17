@@ -1,0 +1,18 @@
+{
+  "request": {
+    "action": "resolve",
+    "content": "samye fixture reply"
+  },
+  "response": {
+    "action": "resolve",
+    "author": {
+      "displayName": "Samye Bot",
+      "emailAddress": "bot@example.test",
+      "me": true
+    },
+    "content": "samye fixture reply",
+    "createdTime": "2026-01-01T00:01:00Z",
+    "id": "AAACFd_xZL4",
+    "modifiedTime": "2026-01-01T00:01:00Z"
+  }
+}

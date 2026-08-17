@@ -1,0 +1,38 @@
+{
+  "comments": [
+    {
+      "author": {
+        "displayName": "Test User",
+        "emailAddress": "user@example.test",
+        "me": false
+      },
+      "content": "@ai improve the quoted text",
+      "createdTime": "2026-01-01T00:00:01Z",
+      "deleted": false,
+      "id": "comment-1",
+      "modifiedTime": "2026-01-01T00:00:01Z",
+      "quotedFileContent": {
+        "mimeType": "text/html",
+        "value": "xxxxxxx"
+      },
+      "replies": []
+    },
+    {
+      "author": {
+        "displayName": "Test User",
+        "emailAddress": "user@example.test",
+        "me": false
+      },
+      "content": "@ai pin context",
+      "createdTime": "2026-01-01T00:00:02Z",
+      "deleted": false,
+      "id": "comment-2",
+      "modifiedTime": "2026-01-01T00:00:02Z",
+      "quotedFileContent": {
+        "mimeType": "text/html",
+        "value": "xxxxx xx x xxxxx xxxxxx xxxx xxxxx xxxxx xxxxxxxxxx x xxxxxxxxxx xxxxxxxxx xxx xxxxxxx xxxxxxxxx xxxxxxx xxx xxxx xx xxx xxxxxxxxxxxx xxxxx xxxxxxx xxx x xxxx xxxxxx xxxxx xx xxxxxxxxx xxxxxxxxxxx x xxxx xxx xxxxxxxxxx xxxxxxx"
+      },
+      "replies": []
+    }
+  ]
+}
